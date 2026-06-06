@@ -1,8 +1,10 @@
 <!DOCTYPE html>
+<!-- v3.1 — timer fix + first question render fix — 2026-06-06 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Economics Quiz Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -137,8 +139,8 @@
     <p>Select an available quiz below. You'll need the access code provided by your teacher to begin.</p>
     <div class="hero-stats">
       <div class="stat"><div class="stat-num" id="stat-quizzes">—</div><div class="stat-label">Active Quizzes</div></div>
-      <div class="stat"><div class="stat-num">10</div><div class="stat-label">Questions / Quiz</div></div>
-      <div class="stat"><div class="stat-num">5</div><div class="stat-label">Minutes Per Quiz</div></div>
+      <div class="stat"><div class="stat-num" id="stat-questions">—</div><div class="stat-label">Avg Questions</div></div>
+      <div class="stat"><div class="stat-num" id="stat-time">—</div><div class="stat-label">Avg Minutes</div></div>
     </div>
   </section>
   <section class="section">
@@ -191,7 +193,7 @@
       <div class="quiz-student-info" id="active-student-info"></div>
     </div>
     <div class="quiz-timer-bar" id="timer-wrap">
-      <div><div class="timer-label">Time Left</div><div class="timer-display" id="timer-display">05:00</div></div>
+      <div><div class="timer-label">Time Left</div><div class="timer-display" id="timer-display">00:00</div></div>
     </div>
   </header>
   <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -254,9 +256,19 @@ async function renderLanding(){
   const grid=document.getElementById('quiz-grid');
   try{
     const quizzes=await sb('quizzes?active=eq.true&order=created_at.desc');
-    document.getElementById('stat-quizzes').textContent=quizzes.length;
-    document.getElementById('quiz-count-label').textContent=quizzes.length+' quiz'+(quizzes.length!==1?'zes':'')+' available';
-    if(!quizzes.length){grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>No quizzes available yet.<br>Check back later or ask your teacher.</p></div>';return;}
+    const active=quizzes.length;
+    document.getElementById('stat-quizzes').textContent=active;
+    if(active>0){
+      const avgQ=Math.round(quizzes.reduce((a,q)=>a+(q.num_questions||10),0)/active);
+      const avgT=Math.round(quizzes.reduce((a,q)=>a+(q.time_limit||5),0)/active);
+      document.getElementById('stat-questions').textContent=avgQ;
+      document.getElementById('stat-time').textContent=avgT;
+    } else {
+      document.getElementById('stat-questions').textContent='—';
+      document.getElementById('stat-time').textContent='—';
+    }
+    document.getElementById('quiz-count-label').textContent=active+' quiz'+(active!==1?'zes':'')+' available';
+    if(!active){grid.innerHTML='<div class="empty-state"><div class="empty-state-icon">📋</div><p>No quizzes available yet.<br>Check back later or ask your teacher.</p></div>';return;}
     grid.innerHTML=quizzes.map(q=>`
       <div class="quiz-card" onclick="openModal('${q.id}')">
         <div class="quiz-card-accent"></div>
@@ -266,8 +278,8 @@ async function renderLanding(){
           <div class="quiz-card-title">${q.title}</div>
           <div class="quiz-card-desc">${q.description||'Multiple choice economics quiz. Have your access code ready before starting.'}</div>
           <div class="quiz-card-meta">
-            <span class="meta-item">❓ ${q.questions.length} Questions</span>
-            <span class="meta-item">⏱️ 5 Minutes</span>
+            <span class="meta-item">❓ ${q.num_questions||10} Questions</span>
+            <span class="meta-item">⏱️ ${q.time_limit||5} Minutes</span>
             <span class="meta-item">🔒 Code Required</span>
           </div>
           <button class="quiz-card-btn">Start Quiz →</button>
@@ -301,39 +313,97 @@ async function startQuiz(){
   if(!roll){document.getElementById('err-roll').classList.add('show');valid=false;}else document.getElementById('err-roll').classList.remove('show');
   if(!currentQuiz||currentQuiz.access_code.toUpperCase()!==code){document.getElementById('err-code').classList.add('show');valid=false;}else document.getElementById('err-code').classList.remove('show');
   if(!valid)return;
+
   const btn=document.getElementById('begin-btn');
   btn.disabled=true;btn.textContent='Loading…';
+
+  // Shuffle and slice to the quiz's configured number of questions
+  const numQ = currentQuiz.num_questions || 10;
+  const timeLimitMins = currentQuiz.time_limit || 5;
+
   const shuffled=[...currentQuiz.questions];
   for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
-  const selected=shuffled.slice(0,10);
-  quizState={quizId:currentQuiz.id,quizTitle:currentQuiz.title,student:{name,cls,roll},questions:selected,answers:new Array(selected.length).fill(null),current:0,timeLeft:5*60};
+  const selected=shuffled.slice(0, numQ);
+
+  quizState={
+    quizId:currentQuiz.id,
+    quizTitle:currentQuiz.title,
+    student:{name,cls,roll},
+    questions:selected,
+    answers:new Array(selected.length).fill(null),
+    current:0,
+    timeLeft:timeLimitMins*60,
+    totalTime:timeLimitMins*60,
+  };
+
   btn.disabled=false;btn.textContent='Begin Quiz →';
-  closeModal();showPage('quiz-page');
-  document.getElementById('active-quiz-title').textContent=currentQuiz.title;
+
+  // Save what we need BEFORE closeModal() nulls currentQuiz
+  const quizTitle = currentQuiz.title;
+
+  closeModal();
+  showPage('quiz-page');
+  document.getElementById('active-quiz-title').textContent=quizTitle;
   document.getElementById('active-student-info').textContent=name+' · '+cls+' · '+roll;
-  renderQuestion();startTimer();
+
+  setTimeout(()=>{
+    requestAnimationFrame(()=>{
+      renderQuestion();
+      startTimer();
+    });
+  }, 50);
 }
 
 function startTimer(){
-  clearInterval(timerInterval);updateTimerDisplay();
-  timerInterval=setInterval(()=>{quizState.timeLeft--;updateTimerDisplay();if(quizState.timeLeft<=0){clearInterval(timerInterval);submitQuiz(true);}},1000);
+  clearInterval(timerInterval);
+  updateTimerDisplay();
+  timerInterval=setInterval(()=>{
+    quizState.timeLeft--;
+    updateTimerDisplay();
+    if(quizState.timeLeft<=0){clearInterval(timerInterval);submitQuiz(true);}
+  },1000);
 }
+
 function updateTimerDisplay(){
   const m=Math.floor(quizState.timeLeft/60),s=quizState.timeLeft%60;
   document.getElementById('timer-display').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  document.getElementById('timer-wrap').classList.toggle('timer-danger',quizState.timeLeft<=60);
+  // Warn in last 20% of time
+  const warnAt = Math.floor(quizState.totalTime * 0.2);
+  document.getElementById('timer-wrap').classList.toggle('timer-danger',quizState.timeLeft<=warnAt);
 }
+
 function renderQuestion(){
-  const{questions,current,answers}=quizState;const q=questions[current];const letters=['A','B','C','D'];
+  const{questions,current,answers}=quizState;
+  const q=questions[current];
+  const letters=['A','B','C','D'];
+
+  // Update counter and progress
   document.getElementById('q-counter').textContent=`Question ${current+1} of ${questions.length}`;
-  document.getElementById('q-text').textContent=q.question;
   document.getElementById('progress-fill').style.width=((current+1)/questions.length*100)+'%';
-  document.getElementById('q-options').innerHTML=q.options.map((opt,i)=>`<div class="q-option${answers[current]===i?' selected':''}" onclick="selectAnswer(${i})"><div class="q-option-letter">${letters[i]}</div><div class="q-option-text">${opt}</div></div>`).join('');
-  document.getElementById('dot-nav').innerHTML=questions.map((_,i)=>`<div class="q-dot${i===current?' current':''}${answers[i]!==null?' answered':''}" onclick="goToQuestion(${i})"></div>`).join('');
+
+  // ── FIX: set question text directly, never leave blank ────────
+  const qTextEl=document.getElementById('q-text');
+  qTextEl.textContent='';
+  qTextEl.textContent=q.question;
+
+  // Render options
+  document.getElementById('q-options').innerHTML=q.options.map((opt,i)=>`
+    <div class="q-option${answers[current]===i?' selected':''}" onclick="selectAnswer(${i})">
+      <div class="q-option-letter">${letters[i]}</div>
+      <div class="q-option-text">${opt}</div>
+    </div>`).join('');
+
+  // Render dots
+  document.getElementById('dot-nav').innerHTML=questions.map((_,i)=>
+    `<div class="q-dot${i===current?' current':''}${answers[i]!==null?' answered':''}" onclick="goToQuestion(${i})"></div>`
+  ).join('');
+
+  // Show/hide next vs submit
   const isLast=current===questions.length-1;
   document.getElementById('btn-next').style.display=isLast?'none':'';
   document.getElementById('btn-submit').style.display=isLast?'':'none';
 }
+
 function selectAnswer(idx){quizState.answers[quizState.current]=idx;renderQuestion();}
 function nextQuestion(){if(quizState.current<quizState.questions.length-1){quizState.current++;renderQuestion();}}
 function goToQuestion(i){quizState.current=i;renderQuestion();}
@@ -342,14 +412,24 @@ async function submitQuiz(timedOut=false){
   clearInterval(timerInterval);
   const sb2=document.getElementById('btn-submit');
   if(sb2){sb2.disabled=true;sb2.textContent='Saving…';}
-  const{questions,answers,student,quizTitle,quizId,timeLeft}=quizState;
+  const{questions,answers,student,quizTitle,quizId,timeLeft,totalTime}=quizState;
   let score=0;
   questions.forEach((q,i)=>{if(answers[i]!==null&&q.options[answers[i]]===q.correctAnswer)score++;});
   const total=questions.length,pct=Math.round(score/total*100);
-  const timeTaken=5*60-timeLeft,mins=Math.floor(timeTaken/60),secs=timeTaken%60;
+  const timeTaken=totalTime-timeLeft;
+  const mins=Math.floor(timeTaken/60),secs=timeTaken%60;
   const now=new Date();
-  const result={quiz_id:quizId,quiz_title:quizTitle,student_name:student.name,student_class:student.cls,roll_number:student.roll,score,total,percentage:pct,time_taken:String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0'),date:now.toLocaleDateString('en-GB'),time:now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),timed_out:timedOut};
+  const result={
+    quiz_id:quizId,quiz_title:quizTitle,
+    student_name:student.name,student_class:student.cls,roll_number:student.roll,
+    score,total,percentage:pct,
+    time_taken:String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0'),
+    date:now.toLocaleDateString('en-GB'),
+    time:now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),
+    timed_out:timedOut
+  };
   try{await sb('results',{method:'POST',body:JSON.stringify(result)});}catch(e){console.error('Save failed:',e);}
+
   document.getElementById('result-icon').textContent=pct>=70?'🎉':pct>=40?'📝':'📖';
   document.getElementById('result-score-num').textContent=score;
   document.getElementById('result-score-total').textContent='/ '+total;
@@ -365,6 +445,7 @@ async function submitQuiz(timedOut=false){
   document.getElementById('result-message').textContent=pct>=70?'Excellent work! Your result has been recorded.':pct>=40?'Good effort! Keep studying!':'Your result has been recorded. Review your notes and try again.';
   showPage('result-page');
 }
+
 function goHome(){showPage('landing-page');renderLanding();}
 function showPage(id){['landing-page','quiz-page','result-page'].forEach(p=>document.getElementById(p).style.display=p===id?'block':'none');}
 renderLanding();

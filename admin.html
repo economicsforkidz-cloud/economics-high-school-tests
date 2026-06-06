@@ -1,8 +1,10 @@
 <!DOCTYPE html>
+<!-- v3.1 — timer fix + first question render fix — 2026-06-06 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Admin Panel — Economics Quiz Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -17,8 +19,6 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:#f0eee8;color:var(--text);min-height:100vh;}
-
-  /* LOGIN */
   #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,#1c3a5e 100%);position:relative;}
   #login-screen::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23c9a84c' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");}
   .login-card{background:var(--white);border-radius:20px;padding:48px 44px;max-width:400px;width:90%;box-shadow:0 40px 100px rgba(0,0,0,.5);position:relative;animation:fadeUp .5s cubic-bezier(.2,.8,.4,1);}
@@ -38,8 +38,6 @@
   .btn-login{width:100%;padding:14px;background:var(--navy);color:var(--white);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px;}
   .btn-login:hover{background:var(--navy-light);}
   .login-hint{font-size:.72rem;color:var(--muted);text-align:center;margin-top:16px;}
-
-  /* SHELL */
   #admin-shell{display:none;min-height:100vh;}
   .admin-wrap{display:flex;min-height:100vh;}
   .sidebar{width:var(--sidebar-w);background:var(--navy);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
@@ -65,19 +63,15 @@
   .teacher-avatar{width:28px;height:28px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--gold);font-weight:700;}
   .teacher-name{font-size:.8rem;font-weight:600;color:var(--navy);}
   .page-body{flex:1;padding:32px;}
-
-  /* CARDS */
   .stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px;}
   .stat-card{background:var(--white);border-radius:14px;padding:22px;border:1px solid #e0d8cc;}
   .stat-card-label{font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
   .stat-card-value{font-family:'Playfair Display',serif;font-size:2rem;color:var(--navy);font-weight:700;}
   .stat-card-icon{font-size:1.4rem;margin-bottom:8px;}
-
   .panel{background:var(--white);border-radius:16px;border:1px solid #e0d8cc;margin-bottom:28px;overflow:hidden;}
   .panel-header{padding:20px 24px;border-bottom:1px solid #f0ece4;display:flex;align-items:center;justify-content:space-between;}
   .panel-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--navy);}
   .panel-body{padding:24px;}
-
   .btn{padding:10px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;}
   .btn-navy{background:var(--navy);color:var(--white);}
   .btn-navy:hover{background:var(--navy-light);}
@@ -90,7 +84,6 @@
   .btn-success{background:rgba(46,125,79,.1);color:var(--success);border:1px solid rgba(46,125,79,.2);}
   .btn-success:hover{background:rgba(46,125,79,.18);}
   .btn-sm{padding:6px 12px;font-size:.75rem;}
-
   .data-table{width:100%;border-collapse:collapse;}
   .data-table th{text-align:left;font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 14px;background:#faf7f2;border-bottom:1px solid #e8e0d4;}
   .data-table td{padding:12px 14px;font-size:.84rem;border-bottom:1px solid #f5f0e8;vertical-align:middle;}
@@ -100,7 +93,6 @@
   .badge-active{background:rgba(46,125,79,.12);color:var(--success);}
   .badge-inactive{background:rgba(107,123,141,.1);color:var(--muted);}
   .access-code{font-family:monospace;font-size:1.05rem;font-weight:700;background:rgba(201,168,76,.12);color:var(--gold-dark);padding:4px 10px;border-radius:7px;letter-spacing:.15em;}
-
   .quiz-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   @media(max-width:600px){.quiz-form-grid{grid-template-columns:1fr;}}
   .form-group{display:flex;flex-direction:column;gap:6px;}
@@ -109,7 +101,10 @@
   .f-input,.f-select,.f-textarea{padding:11px 14px;border:1.5px solid #d8d0c4;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s;}
   .f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--gold);background:var(--white);}
   .f-textarea{resize:vertical;min-height:72px;}
-
+  /* NEW: settings row with hint text */
+  .f-hint{font-size:.7rem;color:var(--muted);margin-top:3px;}
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+  @media(max-width:600px){.settings-grid{grid-template-columns:1fr;}}
   .question-block{background:var(--cream);border-radius:12px;padding:20px;margin-bottom:16px;border:1px solid #ddd6c8;position:relative;}
   .qb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
   .qb-num{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--navy);}
@@ -119,10 +114,8 @@
   .correct-marker input[type=radio]{accent-color:var(--gold);}
   .add-q-btn{border:2px dashed #c9a84c;background:rgba(201,168,76,.05);color:var(--gold-dark);border-radius:12px;padding:16px;width:100%;font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:pointer;transition:all .2s;margin-bottom:16px;}
   .add-q-btn:hover{background:rgba(201,168,76,.12);}
-
   .tab-page{display:none;}
   .tab-page.active{display:block;}
-
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,35,.75);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
   .modal-overlay.active{display:flex;}
   .modal-box{background:var(--white);border-radius:18px;padding:36px;max-width:480px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:modalIn .3s cubic-bezier(.2,.8,.4,1);}
@@ -130,19 +123,15 @@
   .modal-title{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:8px;}
   .modal-sub{font-size:.84rem;color:var(--muted);margin-bottom:24px;line-height:1.5;}
   .modal-actions{display:flex;gap:12px;margin-top:24px;}
-
-  #quiz-builder-scroll{max-height:60vh;overflow-y:auto;padding-right:4px;}
+  #quiz-builder-scroll{max-height:55vh;overflow-y:auto;padding-right:4px;}
   .filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
   .filter-bar select,.filter-bar input{padding:9px 14px;border:1.5px solid #d8d0c4;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.84rem;background:var(--white);outline:none;}
   .filter-bar select:focus,.filter-bar input:focus{border-color:var(--gold);}
-
   .spinner{width:24px;height:24px;border:3px solid #ddd6c8;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
   @keyframes spin{to{transform:rotate(360deg)}}
-
   .notification{position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--white);padding:14px 20px;border-radius:12px;font-size:.84rem;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:999;display:none;max-width:320px;border-left:4px solid var(--gold);}
   .notification.show{display:block;animation:slideIn .3s ease;}
   @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
-
   @media(max-width:560px){.sidebar{display:none;}.page-body{padding:16px;}.top-bar{padding:0 16px;}}
 </style>
 </head>
@@ -226,17 +215,22 @@
           <div class="panel">
             <div class="panel-header"><span class="panel-title">All Quizzes</span><button class="btn btn-navy" onclick="showTab('create-quiz')">+ Create New</button></div>
             <div style="overflow-x:auto;">
-              <table class="data-table"><thead><tr><th>Title</th><th>Questions</th><th>Access Code</th><th>Status</th><th>Actions</th></tr></thead><tbody id="quizzes-tbody"></tbody></table>
+              <table class="data-table">
+                <thead><tr><th>Title</th><th>Questions</th><th>Time</th><th>Access Code</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="quizzes-tbody"></tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- CREATE QUIZ -->
+        <!-- CREATE / EDIT QUIZ -->
         <div class="tab-page" id="tab-create-quiz">
           <div class="panel">
             <div class="panel-header"><span class="panel-title" id="create-panel-title">Create New Quiz</span><button class="btn btn-outline" onclick="resetQuizForm()">Reset</button></div>
             <div class="panel-body">
-              <div class="quiz-form-grid" style="margin-bottom:24px;">
+
+              <!-- Row 1: title + description -->
+              <div class="quiz-form-grid" style="margin-bottom:16px;">
                 <div class="form-group">
                   <label class="f-label">Quiz Title *</label>
                   <input class="f-input" id="q-title" placeholder="e.g. Demand & Supply — Unit 3">
@@ -245,6 +239,10 @@
                   <label class="f-label">Description</label>
                   <input class="f-input" id="q-desc" placeholder="Short description (optional)">
                 </div>
+              </div>
+
+              <!-- Row 2: access code + status -->
+              <div class="quiz-form-grid" style="margin-bottom:16px;">
                 <div class="form-group">
                   <label class="f-label">Access Code *</label>
                   <div style="display:flex;gap:8px;">
@@ -260,12 +258,37 @@
                   </select>
                 </div>
               </div>
+
+              <!-- Row 3: NEW — questions count + time limit -->
+              <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+                <div style="font-size:.75rem;font-weight:600;color:var(--gold-dark);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">⚙️ Quiz Settings</div>
+                <div class="settings-grid">
+                  <div class="form-group">
+                    <label class="f-label">Questions Per Student *</label>
+                    <input class="f-input" id="q-num-questions" type="number" min="1" max="100" value="10" placeholder="10">
+                    <div class="f-hint">How many questions each student sees (randomly selected from your question bank)</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="f-label">Time Limit (Minutes) *</label>
+                    <input class="f-input" id="q-time-limit" type="number" min="1" max="180" value="5" placeholder="5">
+                    <div class="f-hint">Total time allowed for the quiz in minutes</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="f-label">Total Questions in Bank</label>
+                    <div style="padding:11px 14px;border:1.5px solid #d8d0c4;border-radius:9px;background:var(--white);font-size:.88rem;color:var(--muted);" id="q-bank-count">0 questions added</div>
+                    <div class="f-hint">Add at least as many questions as "Questions Per Student"</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Questions -->
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);">Questions <span id="q-count-badge" style="background:var(--cream-dark);padding:2px 8px;border-radius:8px;font-size:.75rem;font-family:'DM Sans',sans-serif;">0</span></div>
-                <div style="font-size:.75rem;color:var(--muted);">Minimum 10 recommended · Students get a shuffled set</div>
+                <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);">Question Bank <span id="q-count-badge" style="background:var(--cream-dark);padding:2px 8px;border-radius:8px;font-size:.75rem;font-family:'DM Sans',sans-serif;">0</span></div>
+                <div style="font-size:.75rem;color:var(--muted);">Students receive a shuffled random selection</div>
               </div>
               <div id="quiz-builder-scroll"><div id="questions-container"></div></div>
               <button class="add-q-btn" onclick="addQuestion()">+ Add Question</button>
+
               <input type="hidden" id="editing-quiz-id" value="">
               <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
                 <button class="btn btn-outline" onclick="showTab('quizzes')">Cancel</button>
@@ -387,9 +410,12 @@ function showTab(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   document.getElementById('page-title').textContent=tabTitles[id]||id;
-  // highlight nav
   document.querySelectorAll('.nav-item').forEach(n=>{
-    if((id==='dashboard'&&n.textContent.includes('Dashboard'))||(id==='quizzes'&&n.textContent.includes('Quizzes')&&!n.textContent.includes('Create'))||(id==='create-quiz'&&n.textContent.includes('Create'))||(id==='results'&&n.textContent.includes('Results'))||(id==='settings'&&n.textContent.includes('Settings')))n.classList.add('active');
+    if((id==='dashboard'&&n.textContent.includes('Dashboard'))||
+       (id==='quizzes'&&n.textContent.includes('Quizzes')&&!n.textContent.includes('Create'))||
+       (id==='create-quiz'&&n.textContent.includes('Create'))||
+       (id==='results'&&n.textContent.includes('Results'))||
+       (id==='settings'&&n.textContent.includes('Settings')))n.classList.add('active');
   });
   if(id==='dashboard')renderDashboard();
   if(id==='quizzes')renderQuizzesList();
@@ -415,7 +441,7 @@ async function renderDashboard(){
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0ece4;">
         <div>
           <div style="font-size:.86rem;font-weight:600;color:var(--navy);">${q.title}</div>
-          <div style="font-size:.74rem;color:var(--muted);">${q.questions.length} questions</div>
+          <div style="font-size:.74rem;color:var(--muted);">${q.num_questions||10} questions · ${q.time_limit||5} mins</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <span class="access-code">${q.access_code}</span>
@@ -423,27 +449,27 @@ async function renderDashboard(){
         </div>
       </div>`).join('');
     const rb=document.getElementById('dash-results-body');
-    const recent=results.slice(0,8);
-    rb.innerHTML=recent.length?recent.map(r=>`
+    rb.innerHTML=results.slice(0,8).map(r=>`
       <tr>
         <td><div style="font-size:.82rem;font-weight:600;">${r.student_name}</div><div style="font-size:.72rem;color:var(--muted);">${r.student_class}</div></td>
         <td style="font-size:.78rem;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.quiz_title}</td>
         <td><span style="font-weight:700;color:${r.percentage>=70?'var(--success)':r.percentage>=40?'var(--warning)':'var(--danger)'}">${r.score}/${r.total}</span></td>
-      </tr>`).join(''):'<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:.8rem;">No results yet.</td></tr>';
+      </tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px;font-size:.8rem;">No results yet.</td></tr>';
   }catch(e){notify('Error loading dashboard: '+e.message);}
 }
 
 /* QUIZZES LIST */
 async function renderQuizzesList(){
   const tb=document.getElementById('quizzes-tbody');
-  tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;"><span class="spinner"></span>Loading…</td></tr>';
+  tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;"><span class="spinner"></span>Loading…</td></tr>';
   try{
     const quizzes=await sb('quizzes?order=created_at.desc');
-    if(!quizzes.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px;font-size:.84rem;">No quizzes yet. <a href="#" onclick="showTab(\'create-quiz\');return false;" style="color:var(--gold);">Create one →</a></td></tr>';return;}
+    if(!quizzes.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px;font-size:.84rem;">No quizzes yet. <a href="#" onclick="showTab(\'create-quiz\');return false;" style="color:var(--gold);">Create one →</a></td></tr>';return;}
     tb.innerHTML=quizzes.map(q=>`
       <tr>
         <td><div style="font-weight:600;font-size:.86rem;">${q.title}</div>${q.description?`<div style="font-size:.73rem;color:var(--muted);">${q.description}</div>`:''}</td>
-        <td>${q.questions.length}</td>
+        <td><span style="font-weight:600;">${q.num_questions||10}</span> <span style="color:var(--muted);font-size:.75rem;">/ ${q.questions.length} bank</span></td>
+        <td>${q.time_limit||5} min</td>
         <td><span class="access-code">${q.access_code}</span></td>
         <td><span class="badge ${q.active?'badge-active':'badge-inactive'}">${q.active?'Active':'Inactive'}</span></td>
         <td>
@@ -454,15 +480,12 @@ async function renderQuizzesList(){
           </div>
         </td>
       </tr>`).join('');
-  }catch(e){tb.innerHTML='<tr><td colspan="5" style="color:var(--danger);padding:20px;">Error loading quizzes.</td></tr>';}
+  }catch(e){tb.innerHTML='<tr><td colspan="6" style="color:var(--danger);padding:20px;">Error loading quizzes.</td></tr>';}
 }
 
 async function toggleQuiz(id,newState){
-  try{
-    await sb('quizzes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({active:newState})});
-    renderQuizzesList();renderDashboard();
-    notify(newState?'✅ Quiz activated.':'Quiz deactivated.');
-  }catch(e){notify('Error: '+e.message);}
+  try{await sb('quizzes?id=eq.'+id,{method:'PATCH',body:JSON.stringify({active:newState})});renderQuizzesList();renderDashboard();notify(newState?'✅ Quiz activated.':'Quiz deactivated.');}
+  catch(e){notify('Error: '+e.message);}
 }
 function deleteQuizConfirm(id){
   showConfirm('Delete Quiz?','This will permanently delete the quiz.',async()=>{
@@ -480,6 +503,8 @@ async function editQuiz(id){
     document.getElementById('q-desc').value=q.description||'';
     document.getElementById('q-code').value=q.access_code;
     document.getElementById('q-status').value=q.active?'active':'inactive';
+    document.getElementById('q-num-questions').value=q.num_questions||10;
+    document.getElementById('q-time-limit').value=q.time_limit||5;
     document.getElementById('questions-container').innerHTML='';
     questionCount=0;
     q.questions.forEach(qs=>addQuestion(qs));
@@ -496,10 +521,16 @@ function resetQuizForm(){
   document.getElementById('q-desc').value='';
   document.getElementById('q-code').value='';
   document.getElementById('q-status').value='active';
+  document.getElementById('q-num-questions').value='10';
+  document.getElementById('q-time-limit').value='5';
   document.getElementById('questions-container').innerHTML='';
   questionCount=0;updateQCount();
 }
-function updateQCount(){document.getElementById('q-count-badge').textContent=document.querySelectorAll('.question-block').length;}
+function updateQCount(){
+  const n=document.querySelectorAll('.question-block').length;
+  document.getElementById('q-count-badge').textContent=n;
+  document.getElementById('q-bank-count').textContent=n+' question'+(n!==1?'s':'')+' added';
+}
 function genCode(){
   const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';
   for(let i=0;i<6;i++)code+=c[Math.floor(Math.random()*c.length)];
@@ -542,15 +573,24 @@ function removeQuestion(btn){
   document.querySelectorAll('.question-block').forEach((el,i)=>{el.querySelector('.qb-num').textContent='Question '+(i+1);});
   updateQCount();
 }
+
 async function saveQuiz(){
   const title=document.getElementById('q-title').value.trim();
   const desc=document.getElementById('q-desc').value.trim();
   const code=document.getElementById('q-code').value.trim().toUpperCase();
   const active=document.getElementById('q-status').value==='active';
+  const numQ=parseInt(document.getElementById('q-num-questions').value)||10;
+  const timeLimit=parseInt(document.getElementById('q-time-limit').value)||5;
+
   if(!title){notify('Please enter a quiz title.');return;}
   if(!code){notify('Please enter an access code.');return;}
+  if(numQ<1){notify('Questions per student must be at least 1.');return;}
+  if(timeLimit<1){notify('Time limit must be at least 1 minute.');return;}
+
   const blocks=document.querySelectorAll('.question-block');
   if(!blocks.length){notify('Please add at least one question.');return;}
+  if(blocks.length<numQ){notify(`You have ${blocks.length} question(s) in the bank but set ${numQ} questions per student. Please add more questions or reduce the number.`);return;}
+
   const questions=[];let valid=true;
   blocks.forEach(b=>{
     const qText=b.querySelector('.qb-question').value.trim();
@@ -559,16 +599,18 @@ async function saveQuiz(){
     if(!qText||opts.some(o=>!o)||!corrRad){valid=false;return;}
     questions.push({question:qText,options:opts,correctAnswer:opts[parseInt(corrRad.value)]});
   });
-  if(!valid){notify('Please fill all question fields and mark a correct answer.');return;}
+  if(!valid){notify('Please fill all question fields and mark a correct answer for each.');return;}
+
   const btn=document.getElementById('save-quiz-btn');
   btn.disabled=true;btn.textContent='Saving…';
   try{
     const editId=document.getElementById('editing-quiz-id').value;
+    const payload={title,description:desc,access_code:code,active,questions,num_questions:numQ,time_limit:timeLimit};
     if(editId){
-      await sb('quizzes?id=eq.'+editId,{method:'PATCH',body:JSON.stringify({title,description:desc,access_code:code,active,questions})});
+      await sb('quizzes?id=eq.'+editId,{method:'PATCH',body:JSON.stringify(payload)});
       notify('✅ Quiz updated successfully.');
     }else{
-      await sb('quizzes',{method:'POST',body:JSON.stringify({id:'q_'+Date.now(),title,description:desc,access_code:code,active,questions})});
+      await sb('quizzes',{method:'POST',body:JSON.stringify({id:'q_'+Date.now(),...payload})});
       notify('✅ Quiz created successfully.');
     }
     resetQuizForm();showTab('quizzes');
@@ -577,7 +619,6 @@ async function saveQuiz(){
 }
 
 /* RESULTS */
-let allResults=[];
 async function renderResultsFilter(){
   try{
     const quizzes=await sb('quizzes?order=title.asc');
@@ -594,8 +635,8 @@ async function renderResults(){
     const search=document.getElementById('filter-search')?.value.toLowerCase()||'';
     let url='results?order=created_at.desc';
     if(filterQ)url+='&quiz_id=eq.'+filterQ;
-    allResults=await sb(url);
-    const filtered=allResults.filter(r=>!search||r.student_name.toLowerCase().includes(search)||r.roll_number.toLowerCase().includes(search));
+    const results=await sb(url);
+    const filtered=results.filter(r=>!search||r.student_name.toLowerCase().includes(search)||r.roll_number.toLowerCase().includes(search));
     if(!filtered.length){tb.innerHTML='';empty.style.display='block';return;}
     empty.style.display='none';
     tb.innerHTML=filtered.map((r,i)=>`
@@ -617,8 +658,7 @@ async function renderResults(){
 async function exportExcel(){
   notify('Preparing export…');
   try{
-    const results=await sb('results?order=created_at.desc');
-    const quizzes=await sb('quizzes?order=title.asc');
+    const[results,quizzes]=await Promise.all([sb('results?order=created_at.desc'),sb('quizzes?order=title.asc')]);
     if(!results.length){notify('No results to export.');return;}
     const ws_data=[
       ['#','Student Name','Class','Roll Number','Quiz Title','Score','Total','Percentage (%)','Time Taken','Date','Time'],
@@ -628,21 +668,20 @@ async function exportExcel(){
     const ws=XLSX.utils.aoa_to_sheet(ws_data);
     ws['!cols']=[5,22,14,16,30,8,8,16,12,12,10].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb,ws,'Results');
-    // Summary sheet
     const summary=[
       ['Summary Report — Economics Quiz Portal'],
       ['Generated:',new Date().toLocaleString()],
       [],
-      ['Quiz','Submissions','Avg Score (%)','Highest (%)','Lowest (%)'],
+      ['Quiz','Questions/Student','Time Limit','Submissions','Avg Score (%)','Highest (%)','Lowest (%)'],
       ...quizzes.map(q=>{
         const qr=results.filter(r=>r.quiz_id===q.id);
-        if(!qr.length)return[q.title,0,'—','—','—'];
+        if(!qr.length)return[q.title,q.num_questions||10,(q.time_limit||5)+' min',0,'—','—','—'];
         const pcts=qr.map(r=>r.percentage);
-        return[q.title,qr.length,Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length)+'%',Math.max(...pcts)+'%',Math.min(...pcts)+'%'];
+        return[q.title,q.num_questions||10,(q.time_limit||5)+' min',qr.length,Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length)+'%',Math.max(...pcts)+'%',Math.min(...pcts)+'%'];
       })
     ];
     const ws2=XLSX.utils.aoa_to_sheet(summary);
-    ws2['!cols']=[30,14,14,12,12].map(w=>({wch:w}));
+    ws2['!cols']=[30,16,12,14,14,12,12].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb,ws2,'Summary');
     XLSX.writeFile(wb,'Quiz_Results_'+new Date().toISOString().split('T')[0]+'.xlsx');
     notify('✅ Excel file downloaded!');
